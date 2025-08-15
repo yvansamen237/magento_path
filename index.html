@@ -56,13 +56,16 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+<div class="flex justify-center py-4 bg-slate-100">
+    <button id="lang-toggle" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105">
+    </button>
+</div>
+
 <main class="container mx-auto px-4 py-8 md:py-12">
 
-    <header class="text-center mb-12 relative">
+    <header class="text-center mb-12">
         <h1 id="main-title" class="text-4xl md:text-5xl font-bold text-slate-900 mb-4"></h1>
         <p id="main-subtitle" class="text-lg text-slate-600 max-w-3xl mx-auto"></p>
-        <button id="lang-toggle" class="absolute top-0 right-0 bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-slate-300 transition-colors">
-        </button>
     </header>
 
     <section id="roadmap" class="mb-16">
@@ -214,13 +217,13 @@
                     id: 'web-applications',
                     phase: 3,
                     title: 'Développement d\'Applications Web',
-                    courseName: 'Full-Stack Web Development with React',
+                    courseName: 'Full-Stack Web Development with PHP',
                     provider: 'The Hong Kong University of Science and Technology',
                     duration: '3 mois (8h/sem)',
                     difficulty: 'Intermédiaire',
-                    justification: "Cette spécialisation pousse votre apprentissage du front-end à un niveau supérieur avec React, une technologie très demandée. Elle vous initie également aux bases du back-end avec Node.js, Express et MongoDB, jetant les bases du développement d'applications web modernes.",
-                    skills: ['React', 'Node.js', 'Express', 'MongoDB', 'Développement Full-Stack'],
-                    tools: ['React', 'Node.js', 'MongoDB', 'Postman'],
+                    justification: "Créez des sites web dynamiques reposant sur des bases de données.. Utilisez PHP, MySQL, jQuery et Handlebars pour créer des applications web et des bases de données.",
+                    skills: ['PHP', 'Javascript', 'SQL', 'JQuery', 'API', 'Développement Full-Stack'],
+                    tools: ['Xampp', 'MySQL', 'Apache', 'Postman'],
                     chartData: { frontend: 7, backend: 6, project: 3, architecture: 2, duration: 3 },
                     courseUrl: 'https://www.coursera.org/specializations/web-applications'
                 },
@@ -241,7 +244,7 @@
                 {
                     id: 'product-management',
                     phase: 5,
-                    title: 'Gestion de Produit et Méthodologies Agiles',
+                    title: 'Gestion de Produit logiciels et Méthodologies Agiles',
                     courseName: 'Product Management Specialization',
                     provider: 'University of Maryland',
                     duration: '3 mois (8h/sem)',
@@ -378,13 +381,13 @@
                     id: 'web-applications',
                     phase: 3,
                     title: 'Developing Web Applications',
-                    courseName: 'Full-Stack Web Development with React',
+                    courseName: 'Full-Stack Web Development with PHP',
                     provider: 'The Hong Kong University of Science and Technology',
                     duration: '3 months (8h/week)',
                     difficulty: 'Intermediate',
-                    justification: "This specialization takes your front-end learning to the next level with React, a highly in-demand technology. It also introduces you to back-end basics with Node.js, Express, and MongoDB, laying the groundwork for modern web application development.",
-                    skills: ['React', 'Node.js', 'Express', 'MongoDB', 'Full-Stack Development'],
-                    tools: ['React', 'Node.js', 'MongoDB', 'Postman'],
+                    justification: "Create dynamic websites based on databases. Use PHP, MySQL, jQuery, and Handlebars to create web applications and databases.",
+                    skills: ['PHP', 'Javascript', 'SQL', 'JQuery', 'API', 'Développement Full-Stack'],
+                    tools: ['Xampp', 'MySQL', 'Apache', 'Postman'],
                     chartData: { frontend: 7, backend: 6, project: 3, architecture: 2, duration: 3 },
                     courseUrl: 'https://www.coursera.org/specializations/web-applications'
                 },
@@ -405,7 +408,7 @@
                 {
                     id: 'product-management',
                     phase: 5,
-                    title: 'Product Management and Agile Methodologies',
+                    title: 'Software Product Management and Agile Methodologies',
                     courseName: 'Product Management Specialization',
                     provider: 'University of Maryland',
                     duration: '3 months (8h/week)',
@@ -455,11 +458,11 @@
     function updateUI(lang) {
         const data = translations[lang];
         const courseData = data.courseData;
+        const langToggleBtn = document.getElementById('lang-toggle');
 
         // Mise à jour des textes statiques
         document.getElementById('main-title').textContent = data.mainTitle;
         document.getElementById('main-subtitle').textContent = data.mainSubtitle;
-        document.getElementById('lang-toggle').textContent = data.langButton;
         document.getElementById('roadmap-title').textContent = data.roadmapTitle;
         document.getElementById('roadmap-subtitle').textContent = data.roadmapSubtitle;
         document.getElementById('total-duration-title').textContent = data.totalDurationTitle;
@@ -471,6 +474,16 @@
         document.getElementById('jobs-title').textContent = data.jobsTitle;
         document.getElementById('jobs-subtitle').textContent = data.jobsSubtitle;
         document.getElementById('footer-text').innerHTML = data.footerText;
+
+        // Mise à jour du bouton de langue
+        langToggleBtn.textContent = data.langButton;
+        if (lang === 'fr') {
+            langToggleBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+            langToggleBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        } else {
+            langToggleBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            langToggleBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+        }
 
         // Mise à jour des cartes de phase
         renderPhaseCards(courseData);
