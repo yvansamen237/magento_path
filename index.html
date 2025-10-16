@@ -3,712 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parcours d'Apprentissage en Développement Web et Logiciel</title>
+    <title>Parcours d'Apprentissage pour Développeur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Vibrant Teal and Deep Navy -->
+    <!-- Application Structure Plan: J'ai conçu cette application comme une feuille de route visuelle et chronologique. La structure principale est une ligne de temps verticale, car elle représente le plus intuitivement un parcours d'apprentissage séquentiel, étape par étape. Cette approche répond directement à la demande de l'utilisateur pour un "ordre d'apprentissage optimal". La page commence par une introduction qui explique la logique du parcours (fondamentaux d'abord, puis spécialisation). Un graphique en anneau offre un aperçu visuel de la répartition des compétences, permettant à l'utilisateur de comprendre l'équilibre du programme en un coup d'œil. Chaque étape de la chronologie détaille le cours, justifie sa position dans le parcours et fournit un lien direct, ainsi qu'un placeholder pour le lien du certificat. Cette structure a été choisie pour sa clarté, sa logique et sa facilité de navigation, guidant l'utilisateur de manière engageante à travers son futur apprentissage. -->
+    <!-- Visualization & Content Choices: 
+        1.  Parcours d'apprentissage -> Goal: Organiser/Séquencer -> Viz: Ligne de temps verticale (HTML/Tailwind) -> Interaction: Clic sur les liens -> Justification: Représente clairement une progression dans le temps, facile à suivre pour l'utilisateur.
+        2.  Répartition des compétences -> Goal: Informer/Comparer -> Viz: Graphique en anneau (Chart.js/Canvas) -> Interaction: Survol pour voir les détails (tooltip) -> Justification: Fournit un résumé visuel et rapide de la structure du parcours, montrant l'importance relative de chaque bloc de compétences (fondamentaux, principes, spécialisation).
+        3.  Détails des cours -> Goal: Informer -> Viz: Blocs de texte structurés -> Interaction: Boutons de lien pour la formation et le certificat (JS/HTML) -> Justification: Présente les informations essentielles (titre, justification, compétences) de manière claire et concise pour chaque étape, en ajoutant la fonctionnalité demandée.
+        Le tout est intégré dans une page unique pour une expérience fluide et sans interruption. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF;
+            color: #1A1A1A;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2.5rem;
+            padding-left: 2.5rem;
+        }
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 0.4rem;
+            top: 0.5rem;
+            width: 2px;
+            height: 100%;
+            background-color: #B0D9D9;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            height: 1rem;
+            width: 1rem;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: 2px solid #00A3A0;
+            z-index: 10;
         }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
+            max-width: 400px;
             margin-left: auto;
             margin-right: auto;
             height: 350px;
-            max-height: 450px;
+            max-height: 400px;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
+        .btn-certificate {
+            background-color: #192A56;
+            color: #FFFFFF;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            transition: background-color 0.2s;
         }
-        .phase-card {
-            transition: all 0.3s ease-in-out;
-            cursor: pointer;
-        }
-        .phase-card.active {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            border-color: #f59e0b; /* amber-500 */
-        }
-        .details-section {
-            transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-        }
-        .details-section.visible {
-            max-height: 2000px; /* Large enough to not clip content */
-            opacity: 1;
-        }
-        .cta-button {
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        .cta-button:hover {
-            transform: translateY(-2px);
+        .btn-certificate:hover {
+            background-color: #152243;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#00A3A0] mb-2">Mon Parcours pour Devenir Développeur Magento à GLOTELHO</h1>
+            <p class="text-lg text-[#192A56] max-w-3xl mx-auto">Un itinéraire d'apprentissage optimisé, étape par étape, pour construire des bases solides et atteindre l'expertise.</p>
+        </header>
 
-<div class="flex justify-center py-4 bg-slate-100">
-    <button id="lang-toggle" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105">
-    </button>
-</div>
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div class="lg:col-span-2">
+                <h2 class="text-3xl font-bold text-[#00A3A0] mb-8 border-b-2 border-[#B0D9D9] pb-2">Feuille de Route</h2>
+                <div class="timeline">
+                    <!-- Les données des cours sont stockées ici pour un accès facile par JS, y compris l'espace pour le lien du certificat -->
+                    <script>
+                        const courses = [
+                            {
+                                id: 1,
+                                title: "Les Fondamentaux du Développement Web",
+                                subtitle: "Web application for everybody | University of Michigan",
+                                link: "https://www.coursera.org/specializations/web-design",
+                                certifLink: "https://www.coursera.org/account/accomplishments/specialization/IM3PPPPM02VZ", // Mettez votre lien de certificat ici
+                                rationale: "C'est le point de départ indispensable. Ce cours couvre le trio fondamental (HTML, CSS, JavaScript) qui constitue la base de presque tout le développement web. Maîtriser ces technologies est non négociable."
+                            },
+                            {
+                                id: 2,
+                                title: "Maîtrise du Backend avec PHP",
+                                subtitle: "PHP for Beginners - Become a PHP Master",
+                                link: "https://www.udemy.com/course/php-from-scratch-course/",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Après avoir compris comment structurer et styliser une page, il est temps de la rendre dynamique. PHP est un excellent premier langage backend, largement utilisé et relativement simple à apprendre, qui vous ouvrira les portes de la logique serveur."
+                            },
+                            {
+                                id: 3,
+                                title: "L'Outil Indispensable : Git & GitHub",
+                                subtitle: "Master Git and Github in 5 Days",
+                                link: "https://www.coursera.org/learn/introduction-git-github",
+                                certifLink: "https://www.coursera.org/account/accomplishments/verify/495XE28512JF", // Mettez votre lien de certificat ici
+                                rationale: "Avant de construire des projets plus complexes, il est crucial de savoir gérer les versions de votre code. Git est la norme de l'industrie pour le contrôle de version. Cette compétence est requise dans 99% des postes de développeur."
+                            },
+                            {
+                                id: 4,
+                                title: "Les Principes de l'Ingénierie Logicielle",
+                                subtitle: "Software Engineering Specialization",
+                                link: "https://www.coursera.org/specializations/software-engineering",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Vous savez coder, il est temps d'apprendre à 'construire'. Cette spécialisation vous enseignera les processus, les méthodologies (comme Agile) et les cycles de vie du développement logiciel pour créer des applications robustes et maintenables."
+                            },
+                            {
+                                id: 5,
+                                title: "Conception et Architecture Logicielle",
+                                subtitle: "Software Design and Architecture Specialization",
+                                link: "https://www.coursera.org/specializations/software-design-architecture",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Cela s'appuie directement sur l'étape précédente. Vous apprendrez à concevoir l'architecture d'un logiciel avant même d'écrire une ligne de code, en utilisant des design patterns pour résoudre des problèmes courants. C'est la différence entre un bricoleur et un ingénieur."
+                            },
+                            {
+                                id: 6,
+                                title: "Tests Logiciels : Qualité et Automatisation",
+                                subtitle: "Software Testing and Automation Specialization",
+                                link: "https://www.coursera.org/specializations/software-testing-automation",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Un bon développeur est un développeur qui teste son code. Apprendre à écrire des tests automatisés garantit la qualité de vos applications, facilite les évolutions et réduit les bugs. C'est une compétence très recherchée."
+                            },
+                            {
+                                id: 7,
+                                title: "Spécialisation E-commerce avec Magento",
+                                subtitle: "Magento 2: From Basics to Advanced",
+                                link: "https://www.magemastery.net/courses/magento-2-from-basics-to-advanced-development/",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Avec une base solide en développement et en ingénierie, vous êtes prêt à vous spécialiser. Magento est une plateforme e-commerce puissante (basée sur PHP). Cette spécialisation vous rendra très attractif sur un marché de niche à forte demande."
+                            },
+                            {
+                                id: 8,
+                                title: "Comprendre l'Infrastructure Réseau",
+                                subtitle: "Akamai - Networking Engineering",
+                                link: "https://www.coursera.org/professional-certificates/akamai-network-engineering",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "Pour devenir un développeur complet, il faut comprendre comment votre application communique sur Internet. Ce cours sur les réseaux vous donnera une vision plus profonde de la performance, de la sécurité et de la livraison de contenu web."
+                            },
+                            {
+                                id: 9,
+                                title: "Gestion de projets de développement logiciels",
+                                subtitle: "Product Management Specialization",
+                                link: "https://www.coursera.org/specializations/product-management",
+                                certifLink: "", // Mettez votre lien de certificat ici
+                                rationale: "C'est la touche finale pour exceller. Comprendre la gestion de produit vous aidera à mieux dialoguer avec les équipes business, à mieux cerner les besoins des utilisateurs et à contribuer plus efficacement à la stratégie globale d'un projet."
+                            }
+                        ];
 
-<main class="container mx-auto px-4 py-8 md:py-12">
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const timeline = document.querySelector('.timeline');
+                            timeline.innerHTML = ''; // Nettoyer l'ancienne structure
 
-    <header class="text-center mb-12">
-        <h1 id="main-title" class="text-4xl md:text-5xl font-bold text-slate-900 mb-4"></h1>
-        <p id="main-subtitle" class="text-lg text-slate-600 max-w-3xl mx-auto"></p>
-    </header>
+                            courses.forEach((course, index) => {
+                                const certifLink = course.certifLink || 'javascript:void(0);';
+                                const certifTarget = course.certifLink ? '_blank' : '_self';
+                                const certifClass = course.certifLink ? '' : 'opacity-50 cursor-not-allowed'; // Optionnel: griser si pas de lien
 
-    <section id="roadmap" class="mb-16">
-        <h2 id="roadmap-title" class="text-3xl font-bold text-center mb-4 text-slate-900"></h2>
-        <p id="roadmap-subtitle" class="text-center text-slate-600 mb-10 max-w-3xl mx-auto"></p>
+                                const item = `
+                                    <div class="timeline-item" id="step-${course.id}">
+                                        <div class="timeline-dot"></div>
+                                        <h3 class="text-xl font-bold text-[#1A1A1A]">Étape ${index + 1}: ${course.subtitle}</h3>
+                                        <p class="text-sm font-medium text-[#00A3A0] mb-2">${course.title}</p>
+                                        <p class="text-[#192A56] mb-3">
+                                            <strong>Pourquoi maintenant ?</strong> ${course.rationale}
+                                        </p>
+                                        <div class="flex flex-wrap items-center">
+                                            <a href="${course.link}" target="_blank" class="text-[#00A3A0] font-semibold hover:underline">Voir la formation &rarr;</a>
+                                            <a href="${certifLink}" target="${certifTarget}" class="btn-certificate ${certifClass}">Voir le certificat</a>
+                                        </div>
+                                    </div>
+                                `;
+                                timeline.innerHTML += item;
+                            });
 
-        <div id="phases-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        </div>
-    </section>
-
-    <section id="details-section" class="details-section bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200">
-    </section>
-
-    <section id="total-duration" class="my-16">
-        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center">
-            <h3 id="total-duration-title" class="text-2xl font-bold text-slate-900 mb-2"></h3>
-            <p id="total-duration-text" class="text-lg text-slate-600"></p>
-        </div>
-    </section>
-
-    <section id="comparison" class="my-16">
-        <h2 id="comparison-title" class="text-3xl font-bold text-center mb-4 text-slate-900"></h2>
-        <p id="comparison-subtitle" class="text-center text-slate-600 mb-10 max-w-2xl mx-auto"></p>
-        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
-            <div class="chart-container">
-                <canvas id="comparisonChart"></canvas>
+                            const ctx = document.getElementById('skillsChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: [
+                                        'Fondamentaux (HTML, CSS, JS, PHP)',
+                                        'Outils & Principes (Git, Ingénierie, Archi, Tests)',
+                                        'Spécialisation & Vision (Magento, Réseau, Produit)'
+                                    ],
+                                    datasets: [{
+                                        label: 'Répartition des compétences',
+                                        data: [2, 4, 3],
+                                        backgroundColor: [
+                                            '#00A3A0',
+                                            '#6CD4C7',
+                                            '#B0D9D9'
+                                        ],
+                                        borderColor: '#FFFFFF',
+                                        borderWidth: 4,
+                                        hoverOffset: 8
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom',
+                                            labels: {
+                                                color: '#1A1A1A',
+                                                font: {
+                                                    size: 12,
+                                                    family: 'Inter, sans-serif'
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    let label = context.label || '';
+                                                    if (label) {
+                                                        label += ': ';
+                                                    }
+                                                    if (context.parsed !== null) {
+                                                        label += context.parsed + ' cours';
+                                                    }
+                                                    return label;
+                                                }
+                                            }
+                                        }
+                                    },
+                                    cutout: '60%'
+                                }
+                            });
+                        });
+                    </script>
+                </div>
             </div>
-        </div>
-    </section>
 
-    <section id="cumulative-skills" class="my-16">
-        <h2 id="skills-title" class="text-3xl font-bold text-center mb-4 text-slate-900"></h2>
-        <p id="skills-subtitle" class="text-center text-slate-600 mb-10 max-w-2xl mx-auto"></p>
-        <div id="skills-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Les cartes de compétences seront générées par JS -->
-        </div>
-    </section>
-
-    <section id="accessible-jobs" class="my-16">
-        <h2 id="jobs-title" class="text-3xl font-bold text-center mb-4 text-slate-900"></h2>
-        <p id="jobs-subtitle" class="text-center text-slate-600 mb-10 max-w-3xl mx-auto"></p>
-        <div id="jobs-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Les cartes de métiers seront générées par JS -->
-        </div>
-    </section>
-
-</main>
-
-<footer class="bg-slate-800 text-slate-300 py-6 text-center">
-    <p id="footer-text"></p>
-</footer>
-
-<script>
-    // Définition de toutes les chaînes de texte et données de cours pour les deux langues
-    const translations = {
-        fr: {
-            mainTitle: "Mon parcours d'apprentissage et d'évolution en développement web à GLOTELHO",
-            mainSubtitle: "Une feuille de route en 7 phases, conçue pour vous guider du design web à l'architecture logicielle avancée.",
-            langButton: "English",
-            roadmapTitle: "Le Parcours d'Apprentissage Recommandé",
-            roadmapSubtitle: "Suivez cette progression logique pour construire une expertise complète et cohérente. Cliquez sur chaque phase pour découvrir le cours recommandé et sa justification.",
-            totalDurationTitle: "Durée Totale du Parcours",
-            totalDurationText: "Le parcours complet représente une durée d'environ 22 mois, en considérant un engagement constant d'environ 10 heures par semaine.",
-            courseButton: "Visiter le cours",
-            detailsInfos: "Infos Clés",
-            detailsDuration: "Durée :",
-            detailsDifficulty: "Difficulté :",
-            detailsSkillsTools: "Compétences & Outils",
-            detailsSkills: "Compétences",
-            detailsTools: "Outils",
-            comparisonTitle: "Analyse Comparative des Cours",
-            comparisonSubtitle: "Ce graphique radar visualise le focus de chaque programme sur le front-end, le back-end, la gestion de projet et l'architecture logicielle. C'est une excellente façon de voir la progression de la difficulté.",
-            chartLabels: ['Front-End', 'Back-End', 'Gestion de Projet', 'Architecture Logicielle'],
-            skillsTitle: "Compétences Cumulatives Acquises",
-            skillsSubtitle: "Une fois le parcours terminé, vous aurez développé un profil complet de développeur et d'ingénieur logiciel, prêt pour des rôles stratégiques.",
-            skillsList: [
-                {
-                    title: "Maîtrise du Versionnement",
-                    description: "Utilisation professionnelle de Git et GitHub pour le travail collaboratif et le contrôle de version."
-                },
-                {
-                    title: "Développement Full-Stack",
-                    description: "Compétences complètes en front-end (HTML, CSS, JS) et back-end (PHP, Node.js, etc.) pour concevoir des applications robustes."
-                },
-                {
-                    title: "Ingénierie & Architecture",
-                    description: "Conception de systèmes logiciels complexes et mise en œuvre des meilleures pratiques d'ingénierie et de design."
-                },
-                {
-                    title: "Gestion de Projet & Produit",
-                    description: "Connaissance des méthodologies agiles et des concepts de gestion de produit pour diriger des initiatives techniques."
-                }
-            ],
-            jobsTitle: "Métiers Accessibles après ce Parcours",
-            jobsSubtitle: "Ce parcours vous prépare à des rôles clés dans le domaine de l'ingénierie logicielle et de la gestion de produits.",
-            jobsList: [
-                {
-                    title: "Développeur(se) Web Full-Stack",
-                    description: "Développe à la fois la partie visible (front-end) et la logique métier (back-end) d'une application web."
-                },
-                {
-                    title: "Ingénieur(e) Logiciel",
-                    description: "Conçoit, développe et maintient des systèmes logiciels complexes, en se concentrant sur la fiabilité et la performance."
-                },
-                {
-                    title: "Chef de Produit (Product Manager)",
-                    description: "Définit la vision, la stratégie et la feuille de route d'un produit, en collaborant avec les équipes de développement, de design et de marketing."
-                },
-                {
-                    title: "Architecte Logiciel",
-                    description: "Définit la structure générale du système logiciel, ses composants et leurs interactions, en garantissant qu'il répond aux exigences techniques et fonctionnelles."
-                },
-                {
-                    title: "Développeur(se) Magento",
-                    description: "Spécialiste de la plateforme e-commerce Magento, capable de la personnaliser et de créer des modules pour répondre aux besoins spécifiques d'une boutique en ligne."
-                }
-            ],
-            footerText: "&copy; 2025 Parcours d'Apprentissage en Développement Web. Construit pour la clarté.",
-            courseData: [
-                {
-                    id: 'git',
-                    phase: 1,
-                    title: 'Gestion de version avec Git & GitHub',
-                    courseName: 'Introduction to Git and GitHub',
-                    provider: 'Google',
-                    duration: '1 mois (5h/sem)',
-                    difficulty: 'Débutant',
-                    justification: "Cette introduction est le point de départ indispensable pour tout développeur. La maîtrise de Git et GitHub est la base du travail collaboratif et de la gestion de code dans l'industrie logicielle. C'est la fondation sur laquelle toutes les autres phases reposent.",
-                    skills: ['Git', 'GitHub', 'Version Control', 'Workflow de Développement'],
-                    tools: ['Git', 'GitHub'],
-                    chartData: { frontend: 1, backend: 1, project: 6, architecture: 1, duration: 1 },
-                    courseUrl: 'https://www.coursera.org/learn/introduction-git-github'
-                },
-                {
-                    id: 'web-design',
-                    phase: 2,
-                    title: 'Les Fondamentaux du Web Design',
-                    courseName: 'Web Design for Everybody',
-                    provider: 'University of Michigan',
-                    duration: '3 mois (8h/sem)',
-                    difficulty: 'Débutant',
-                    justification: "Avant de créer des applications complexes, il faut maîtriser la base du web. Cette spécialisation couvre HTML5, CSS3, et JavaScript, vous donnant les compétences pour créer des pages web responsives et visuellement attrayantes. C'est l'introduction parfaite au développement front-end.",
-                    skills: ['HTML5', 'CSS3', 'JavaScript', 'Design Responsif'],
-                    tools: ['Navigateurs web', 'Éditeurs de texte'],
-                    chartData: { frontend: 8, backend: 2, project: 2, architecture: 1, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/web-design'
-                },
-                {
-                    id: 'web-applications',
-                    phase: 3,
-                    title: 'Développement d\'Applications Web',
-                    courseName: 'Full-Stack Web Development with PHP',
-                    provider: 'The Hong Kong University of Science and Technology',
-                    duration: '3 mois (8h/sem)',
-                    difficulty: 'Intermédiaire',
-                    justification: "Créez des sites web dynamiques reposant sur des bases de données.. Utilisez PHP, MySQL, jQuery et Handlebars pour créer des applications web et des bases de données.",
-                    skills: ['PHP', 'Javascript', 'SQL', 'JQuery', 'API', 'Développement Full-Stack'],
-                    tools: ['Xampp', 'MySQL', 'Apache', 'Postman'],
-                    chartData: { frontend: 7, backend: 6, project: 3, architecture: 2, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/web-applications'
-                },
-                {
-                    id: 'magento',
-                    phase: 4,
-                    title: 'Développement E-commerce avec Magento 2',
-                    courseName: 'Magento 2: From Basics to Advanced Development',
-                    provider: 'Mage Mastery',
-                    duration: '4 mois (10h/sem)',
-                    difficulty: 'Intermédiaire',
-                    justification: "Pour ceux qui s'intéressent au commerce électronique, ce cours est une spécialisation ciblée. Il vous apprend à maîtriser une plateforme e-commerce puissante. C'est une compétence technique avancée qui ouvre des portes dans un secteur en pleine croissance.",
-                    skills: ['Magento 2', 'Développement E-commerce', 'PHP', 'Base de données', 'Thèmes & Modules'],
-                    tools: ['Magento 2', 'PHP', 'MySQL', 'Outils de Déploiement'],
-                    chartData: { frontend: 5, backend: 8, project: 4, architecture: 4, duration: 4 },
-                    courseUrl: 'https://www.magemastery.net/courses/magento-2-from-basics-to-advanced-development/'
-                },
-                {
-                    id: 'product-management',
-                    phase: 5,
-                    title: 'Gestion de Produit logiciels et Méthodologies Agiles',
-                    courseName: 'Product Management Specialization',
-                    provider: 'University of Maryland',
-                    duration: '3 mois (8h/sem)',
-                    difficulty: 'Intermédiaire',
-                    justification: "Un développeur ne se contente pas de coder. Comprendre le rôle de la gestion de produit est crucial pour créer des solutions qui répondent aux besoins du marché. Cette phase comble le fossé entre le développement technique et la stratégie commerciale, en vous apprenant à penser comme un chef de produit.",
-                    skills: ['Gestion de Produit', 'Méthodologies Agiles', 'Analyse de Marché', 'Conception UX/UI'],
-                    tools: ['Jira', 'Trello', 'Figma'],
-                    chartData: { frontend: 2, backend: 3, project: 9, architecture: 3, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/product-management'
-                },
-                {
-                    id: 'software-engineering',
-                    phase: 6,
-                    title: 'Principes d\'Ingénierie Logicielle',
-                    courseName: 'Software Engineering Masterclass',
-                    provider: 'University of California, Irvine',
-                    duration: '5 mois (10h/sem)',
-                    difficulty: 'Intermédiaire à Avancé',
-                    justification: "Cette spécialisation vous élève de développeur à ingénieur logiciel. Elle se concentre sur les pratiques fondamentales de l'ingénierie, telles que les tests, la fiabilité, et la documentation. C'est un pas essentiel pour ceux qui visent des rôles de leadership technique.",
-                    skills: ['Tests Logiciels', 'Qualité de Code', 'Développement Agile', 'Ingénierie des Exigences'],
-                    tools: ['Junit', 'Selenium', 'CI/CD Tools'],
-                    chartData: { frontend: 4, backend: 7, project: 7, architecture: 8, duration: 5 },
-                    courseUrl: 'https://www.coursera.org/specializations/software-engineering'
-                },
-                {
-                    id: 'software-design',
-                    phase: 7,
-                    title: 'Design et Architecture Logicielle',
-                    courseName: 'Software Design and Architecture Specialization',
-                    provider: 'University of Alberta',
-                    duration: '3 mois (8h/sem)',
-                    difficulty: 'Avancé',
-                    justification: "Le point culminant du parcours. Cette spécialisation est destinée à ceux qui veulent concevoir des systèmes complexes à grande échelle. Elle couvre les modèles de conception (Design Patterns), l'architecture logicielle et les principes de conception orientée objet, vous préparant à des rôles d'architecte.",
-                    skills: ['Modèles de Conception', 'Architecture Logicielle', 'Programmation Orientée Objet', 'Systèmes Distribués'],
-                    tools: ['UML', 'Design Patterns'],
-                    chartData: { frontend: 3, backend: 6, project: 5, architecture: 9, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/software-design-architecture'
-                }
-            ]
-        },
-        en: {
-            mainTitle: "My Learning and Development Path in Web and Software Development at GLOTELHO",
-            mainSubtitle: "A 7-phase roadmap designed to guide you from web design to advanced software architecture.",
-            langButton: "Français",
-            roadmapTitle: "The Recommended Learning Path",
-            roadmapSubtitle: "Follow this logical progression to build comprehensive and coherent expertise. Click on each phase to discover the recommended course and its justification.",
-            totalDurationTitle: "Total Path Duration",
-            totalDurationText: "The complete path has a total duration of approximately 22 months, assuming a consistent commitment of about 10 hours per week.",
-            courseButton: "Visit Course",
-            detailsInfos: "Key Info",
-            detailsDuration: "Duration:",
-            detailsDifficulty: "Difficulty:",
-            detailsSkillsTools: "Skills & Tools",
-            detailsSkills: "Skills",
-            detailsTools: "Tools",
-            comparisonTitle: "Comparative Course Analysis",
-            comparisonSubtitle: "This radar chart visualizes the focus of each program on front-end, back-end, project management, and software architecture. It's a great way to see the progression in difficulty.",
-            chartLabels: ['Front-End', 'Back-End', 'Project Mgmt', 'Software Arch'],
-            skillsTitle: "Cumulative Skills Acquired",
-            skillsSubtitle: "Once the path is completed, you will have developed a complete profile as a web developer and software engineer, ready for strategic roles.",
-            skillsList: [
-                {
-                    title: "Mastery of Version Control",
-                    description: "Professional use of Git and GitHub for collaborative work and code versioning."
-                },
-                {
-                    title: "Full-Stack Development",
-                    description: "Comprehensive skills in front-end (HTML, CSS, JS) and back-end (PHP, Node.js, etc.) to build robust applications."
-                },
-                {
-                    title: "Engineering & Architecture",
-                    description: "Design of complex software systems and implementation of best practices in engineering and design."
-                },
-                {
-                    title: "Project & Product Management",
-                    description: "Knowledge of agile methodologies and product management concepts to lead technical initiatives."
-                }
-            ],
-            jobsTitle: "Accessible Careers after this Path",
-            jobsSubtitle: "This path prepares you for key roles in software engineering and product management.",
-            jobsList: [
-                {
-                    title: "Full-Stack Web Developer",
-                    description: "Develops both the visible part (front-end) and the business logic (back-end) of a web application."
-                },
-                {
-                    title: "Software Engineer",
-                    description: "Designs, develops, and maintains complex software systems, focusing on reliability and performance."
-                },
-                {
-                    title: "Product Manager",
-                    description: "Defines the vision, strategy, and roadmap for a product, collaborating with development, design, and marketing teams."
-                },
-                {
-                    title: "Software Architect",
-                    description: "Defines the overall structure of the software system, its components, and their interactions, ensuring it meets technical and functional requirements."
-                },
-                {
-                    title: "Magento Developer",
-                    description: "A specialist in the Magento e-commerce platform, capable of customizing it and creating modules to meet specific online store needs."
-                }
-            ],
-            footerText: "&copy; 2025 Web Development Learning Path. Built for clarity.",
-            courseData: [
-                {
-                    id: 'git',
-                    phase: 1,
-                    title: 'Version Control with Git & GitHub',
-                    courseName: 'Introduction to Git and GitHub',
-                    provider: 'Google',
-                    duration: '1 month (5h/week)',
-                    difficulty: 'Beginner',
-                    justification: "This introduction is the essential starting point for any developer. Mastery of Git and GitHub is the foundation of collaborative work and code management in the software industry. It's the building block upon which all other phases rest.",
-                    skills: ['Git', 'GitHub', 'Version Control', 'Development Workflow'],
-                    tools: ['Git', 'GitHub'],
-                    chartData: { frontend: 1, backend: 1, project: 6, architecture: 1, duration: 1 },
-                    courseUrl: 'https://www.coursera.org/learn/introduction-git-github'
-                },
-                {
-                    id: 'web-design',
-                    phase: 2,
-                    title: 'Fundamentals of Web Design',
-                    courseName: 'Web Design for Everybody',
-                    provider: 'University of Michigan',
-                    duration: '3 months (8h/week)',
-                    difficulty: 'Beginner',
-                    justification: "Before building complex applications, you need to master the basics of the web. This specialization covers HTML5, CSS3, and JavaScript, giving you the skills to create responsive and visually appealing web pages. It's the perfect introduction to front-end development.",
-                    skills: ['HTML5', 'CSS3', 'JavaScript', 'Responsive Design'],
-                    tools: ['Web Browsers', 'Text Editors'],
-                    chartData: { frontend: 8, backend: 2, project: 2, architecture: 1, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/web-design'
-                },
-                {
-                    id: 'web-applications',
-                    phase: 3,
-                    title: 'Developing Web Applications',
-                    courseName: 'Full-Stack Web Development with PHP',
-                    provider: 'The Hong Kong University of Science and Technology',
-                    duration: '3 months (8h/week)',
-                    difficulty: 'Intermediate',
-                    justification: "Create dynamic websites based on databases. Use PHP, MySQL, jQuery, and Handlebars to create web applications and databases.",
-                    skills: ['PHP', 'Javascript', 'SQL', 'JQuery', 'API', 'Développement Full-Stack'],
-                    tools: ['Xampp', 'MySQL', 'Apache', 'Postman'],
-                    chartData: { frontend: 7, backend: 6, project: 3, architecture: 2, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/web-applications'
-                },
-                {
-                    id: 'magento',
-                    phase: 4,
-                    title: 'E-commerce Development with Magento 2',
-                    courseName: 'Magento 2: From Basics to Advanced Development',
-                    provider: 'Mage Mastery',
-                    duration: '4 months (10h/week)',
-                    difficulty: 'Intermediate',
-                    justification: "For those interested in e-commerce, this course is a targeted specialization. It teaches you to master a powerful e-commerce platform. It's an advanced technical skill that opens doors in a rapidly growing sector.",
-                    skills: ['Magento 2', 'E-commerce Development', 'PHP', 'Database', 'Themes & Modules'],
-                    tools: ['Magento 2', 'PHP', 'MySQL', 'Deployment Tools'],
-                    chartData: { frontend: 5, backend: 8, project: 4, architecture: 4, duration: 4 },
-                    courseUrl: 'https://www.magemastery.net/courses/magento-2-from-basics-to-advanced-development/'
-                },
-                {
-                    id: 'product-management',
-                    phase: 5,
-                    title: 'Software Product Management and Agile Methodologies',
-                    courseName: 'Product Management Specialization',
-                    provider: 'University of Maryland',
-                    duration: '3 months (8h/week)',
-                    difficulty: 'Intermediate',
-                    justification: "A developer doesn't just code. Understanding the role of product management is crucial for building solutions that meet market needs. This phase bridges the gap between technical development and business strategy, teaching you to think like a product manager.",
-                    skills: ['Product Management', 'Agile Methodologies', 'Market Analysis', 'UX/UI Design'],
-                    tools: ['Jira', 'Trello', 'Figma'],
-                    chartData: { frontend: 2, backend: 3, project: 9, architecture: 3, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/product-management'
-                },
-                {
-                    id: 'software-engineering',
-                    phase: 6,
-                    title: 'Principles of Software Engineering',
-                    courseName: 'Software Engineering Masterclass',
-                    provider: 'University of California, Irvine',
-                    duration: '5 months (10h/week)',
-                    difficulty: 'Intermediate to Advanced',
-                    justification: "This specialization elevates you from developer to software engineer. It focuses on fundamental engineering practices such as testing, reliability, and documentation. It's an essential step for those aiming for technical leadership roles.",
-                    skills: ['Software Testing', 'Code Quality', 'Agile Development', 'Requirements Engineering'],
-                    tools: ['Junit', 'Selenium', 'CI/CD Tools'],
-                    chartData: { frontend: 4, backend: 7, project: 7, architecture: 8, duration: 5 },
-                    courseUrl: 'https://www.coursera.org/specializations/software-engineering'
-                },
-                {
-                    id: 'software-design',
-                    phase: 7,
-                    title: 'Software Design and Architecture',
-                    courseName: 'Software Design and Architecture Specialization',
-                    provider: 'University of Alberta',
-                    duration: '3 months (8h/week)',
-                    difficulty: 'Advanced',
-                    justification: "The culmination of the path. This specialization is for those who want to design complex, large-scale systems. It covers design patterns, software architecture, and object-oriented design principles, preparing you for architect roles.",
-                    skills: ['Design Patterns', 'Software Architecture', 'Object-Oriented Programming', 'Distributed Systems'],
-                    tools: ['UML', 'Design Patterns'],
-                    chartData: { frontend: 3, backend: 6, project: 5, architecture: 9, duration: 3 },
-                    courseUrl: 'https://www.coursera.org/specializations/software-design-architecture'
-                }
-            ]
-        }
-    };
-
-    let currentLang = 'fr';
-    let myChart;
-
-    // Fonction pour mettre à jour l'interface utilisateur en fonction de la langue sélectionnée
-    function updateUI(lang) {
-        const data = translations[lang];
-        const courseData = data.courseData;
-        const langToggleBtn = document.getElementById('lang-toggle');
-
-        // Mise à jour des textes statiques
-        document.getElementById('main-title').textContent = data.mainTitle;
-        document.getElementById('main-subtitle').textContent = data.mainSubtitle;
-        document.getElementById('roadmap-title').textContent = data.roadmapTitle;
-        document.getElementById('roadmap-subtitle').textContent = data.roadmapSubtitle;
-        document.getElementById('total-duration-title').textContent = data.totalDurationTitle;
-        document.getElementById('total-duration-text').textContent = data.totalDurationText;
-        document.getElementById('comparison-title').textContent = data.comparisonTitle;
-        document.getElementById('comparison-subtitle').textContent = data.comparisonSubtitle;
-        document.getElementById('skills-title').textContent = data.skillsTitle;
-        document.getElementById('skills-subtitle').textContent = data.skillsSubtitle;
-        document.getElementById('jobs-title').textContent = data.jobsTitle;
-        document.getElementById('jobs-subtitle').textContent = data.jobsSubtitle;
-        document.getElementById('footer-text').innerHTML = data.footerText;
-
-        // Mise à jour du bouton de langue
-        langToggleBtn.textContent = data.langButton;
-        if (lang === 'fr') {
-            langToggleBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-            langToggleBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-        } else {
-            langToggleBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-            langToggleBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
-        }
-
-        // Mise à jour des cartes de phase
-        renderPhaseCards(courseData);
-
-        // Mise à jour des cartes de compétences
-        renderSkillCards(data.skillsList);
-
-        // Mise à jour des cartes de métiers
-        renderJobCards(data.jobsList);
-
-        // Mise à jour du graphique
-        renderComparisonChart(courseData, data.chartLabels);
-
-        // Sélection de la première carte pour afficher les détails par défaut
-        const firstCard = document.querySelector('.phase-card');
-        if (firstCard) {
-            firstCard.classList.add('active');
-            updateDetails(firstCard.dataset.courseId, courseData);
-        }
-    }
-
-    function renderPhaseCards(courseData) {
-        const phasesContainer = document.getElementById('phases-container');
-        phasesContainer.innerHTML = '';
-        courseData.forEach(course => {
-            const card = document.createElement('div');
-            card.className = 'phase-card bg-white p-6 rounded-2xl shadow-md border-2 border-transparent hover:shadow-xl hover:border-amber-400';
-            card.dataset.courseId = course.id;
-            card.innerHTML = `
-                    <div class="flex items-center mb-4">
-                        <span class="bg-slate-800 text-white text-2xl font-bold rounded-full flex items-center justify-center h-12 w-12 mr-4">${course.phase}</span>
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-900">${course.title}</h3>
-                            <p class="text-sm text-slate-500">${course.courseName}</p>
-                        </div>
-                    </div>
-                `;
-            phasesContainer.appendChild(card);
-        });
-    }
-
-    function updateDetails(courseId, courseData) {
-        const detailsSection = document.getElementById('details-section');
-        const course = courseData.find(c => c.id === courseId);
-        if (!course) return;
-
-        const langData = translations[currentLang];
-
-        detailsSection.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2">
-                        <p class="text-sm font-semibold text-amber-600 mb-1">Phase ${course.phase}</p>
-                        <h3 class="text-3xl font-bold text-slate-900 mb-2">${course.title}</h3>
-                        <p class="text-lg text-slate-600 mb-6">${course.courseName} par ${course.provider}</p>
-                        <p class="text-slate-700 leading-relaxed mb-6">${course.justification}</p>
-                        <a href="${course.courseUrl}" target="_blank" rel="noopener noreferrer" class="cta-button inline-block bg-amber-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50">
-                            ${langData.courseButton}
-                        </a>
-                    </div>
-                    <div>
-                        <div class="bg-slate-100 p-4 rounded-lg mb-4">
-                            <h4 class="font-bold text-slate-800 mb-2">${langData.detailsInfos}</h4>
-                            <p><span class="font-semibold">${langData.detailsDuration}</span> ${course.duration}</p>
-                            <p><span class="font-semibold">${langData.detailsDifficulty}</span> ${course.difficulty}</p>
-                        </div>
-                        <div class="bg-slate-100 p-4 rounded-lg">
-                            <h4 class="font-bold text-slate-800 mb-3">${langData.detailsSkillsTools}</h4>
-                            <h5 class="font-semibold text-sm mb-2 text-slate-600">${langData.detailsSkills}</h5>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                ${course.skills.map(skill => `<span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${skill}</span>`).join('')}
-                            </div>
-                            <h5 class="font-semibold text-sm mb-2 text-slate-600">${langData.detailsTools}</h5>
-                            <div class="flex flex-wrap gap-2">
-                                ${course.tools.map(tool => `<span class="bg-slate-200 text-slate-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${tool}</span>`).join('')}
-                            </div>
-                        </div>
+            <aside class="lg:col-span-1">
+                <div class="sticky top-8 bg-white/50 backdrop-blur-sm p-6 rounded-lg border border-[#B0D9D9]">
+                    <h2 class="text-2xl font-bold text-[#00A3A0] mb-4">Aperçu du Parcours</h2>
+                    <p class="text-[#192A56] mb-6">
+                        Ce parcours est conçu pour vous fournir un ensemble de compétences équilibré, allant des langages de programmation fondamentaux aux concepts d'ingénierie avancés et à la vision stratégique du produit.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
                     </div>
                 </div>
-            `;
-        detailsSection.classList.add('visible');
-    }
-
-    function renderSkillCards(skills) {
-        const skillsListContainer = document.getElementById('skills-list');
-        skillsListContainer.innerHTML = '';
-        skills.forEach(skill => {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-6 rounded-xl shadow-md border border-slate-200';
-            card.innerHTML = `
-                    <h3 class="font-bold text-lg mb-2 text-slate-900">${skill.title}</h3>
-                    <p class="text-slate-600">${skill.description}</p>
-                `;
-            skillsListContainer.appendChild(card);
-        });
-    }
-
-    function renderJobCards(jobs) {
-        const jobsListContainer = document.getElementById('jobs-list');
-        jobsListContainer.innerHTML = '';
-        jobs.forEach(job => {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-6 rounded-xl shadow-md border border-slate-200';
-            card.innerHTML = `
-                    <h3 class="font-bold text-xl mb-2 text-slate-900">${job.title}</h3>
-                    <p class="text-slate-600">${job.description}</p>
-                `;
-            jobsListContainer.appendChild(card);
-        });
-    }
-
-    function renderComparisonChart(courseData, chartLabels) {
-        const ctx = document.getElementById('comparisonChart').getContext('2d');
-
-        // Détruire l'ancien graphique s'il existe
-        if (myChart) {
-            myChart.destroy();
-        }
-
-        const datasets = courseData.map((course, index) => {
-            const colors = [
-                { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgb(245, 158, 11)' }, // amber-500
-                { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgb(59, 130, 246)' }, // blue-500
-                { bg: 'rgba(30, 41, 59, 0.2)', border: 'rgb(30, 41, 59)' },    // slate-800
-                { bg: 'rgba(100, 116, 139, 0.2)', border: 'rgb(100, 116, 139)' }, // slate-500
-                { bg: 'rgba(234, 88, 12, 0.2)', border: 'rgb(234, 88, 12)' }, // orange-600
-                { bg: 'rgba(22, 163, 74, 0.2)', border: 'rgb(22, 163, 74)' }, // green-600
-                { bg: 'rgba(124, 58, 237, 0.2)', border: 'rgb(124, 58, 237)' }  // violet-600
-            ];
-            const colorIndex = index % colors.length;
-            return {
-                label: course.courseName,
-                data: [course.chartData.frontend, course.chartData.backend, course.chartData.project, course.chartData.architecture],
-                backgroundColor: colors[colorIndex].bg,
-                borderColor: colors[colorIndex].border,
-                pointBackgroundColor: colors[colorIndex].border,
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: colors[colorIndex].border,
-                borderWidth: 2
-            };
-        });
-
-        myChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: chartLabels,
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        pointLabels: {
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            },
-                            color: '#475569' // slate-600
-                        },
-                        ticks: {
-                            backdropColor: 'rgba(255, 255, 255, 0.75)',
-                            color: '#64748b', // slate-500
-                            stepSize: 2
-                        },
-                        suggestedMin: 0,
-                        suggestedMax: 10
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            font: {
-                                size: 14
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.r !== null) {
-                                    label += context.parsed.r;
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Écouteur d'événement pour le clic sur les cartes de phase
-    document.getElementById('phases-container').addEventListener('click', (e) => {
-        const card = e.target.closest('.phase-card');
-        if (card) {
-            const courseId = card.dataset.courseId;
-            document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            updateDetails(courseId, translations[currentLang].courseData);
-        }
-    });
-
-    // Écouteur d'événement pour le bouton de changement de langue
-    document.getElementById('lang-toggle').addEventListener('click', () => {
-        currentLang = (currentLang === 'fr') ? 'en' : 'fr';
-        document.documentElement.lang = currentLang;
-        updateUI(currentLang);
-    });
-
-    // Initialisation de l'application au chargement de la fenêtre
-    window.onload = function() {
-        updateUI(currentLang);
-    };
-</script>
+            </aside>
+        </main>
+    </div>
 </body>
 </html>
